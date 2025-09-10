@@ -1,75 +1,134 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// Padrão de bitolas de fio
+const standard = [0.5, 0.75, 1, 1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70];
 
-export default function HomeScreen() {
+// Componente principal do app
+const App = () => {
+  const [corrente, setCorrente] = useState<string>('');
+  const [distancia, setDistancia] = useState<string>('');
+  const [res, setRes] = useState<{
+    b110: number;
+    b220: number;
+    recom110: number;
+    recom220: number;
+  } | null>(null);
+
+  // Função para arredondar para a próxima bitola disponível
+  const roundUpStandard = (value: number): number => {
+    const found = standard.find(s => s >= value);
+    return found || standard[standard.length - 1];
+  };
+
+  // Função para calcular a bitola com base na corrente e distância
+  const calcular = () => {
+    const I = parseFloat(corrente.replace(',', '.')) || 0;
+    const d = parseFloat(distancia.replace(',', '.')) || 0;
+    
+    // Validar se os valores são válidos
+    if (I <= 0 || d <= 0) {
+      Alert.alert('Erro', 'Informe corrente e distância válidas');
+      return;
+    }
+
+    // Calcular as bitolas para 110V e 220V
+    const b110 = (2 * I * d) / 294.64;
+    const b220 = (2 * I * d) / 510.4;
+
+    // Atualizar o estado com os resultados calculados
+    setRes({
+      b110: Math.round(b110 * 100) / 100,
+      b220: Math.round(b220 * 100) / 100,
+      recom110: roundUpStandard(b110),
+      recom220: roundUpStandard(b220)
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Calculadora de Bitola</Text>
 
+        {/* Campos de entrada para corrente e distância */}
+        <TextInput
+          style={styles.input}
+          placeholder="Corrente (A)"
+          value={corrente}
+          onChangeText={setCorrente}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Distância (m)"
+          value={distancia}
+          onChangeText={setDistancia}
+          keyboardType="numeric"
+        />
+
+        {/* Botão para disparar o cálculo */}
+        <TouchableOpacity style={styles.button} onPress={calcular}>
+          <Text style={styles.buttonText}>Calcular</Text>
+        </TouchableOpacity>
+
+        {/* Exibir resultados se disponíveis */}
+        {res && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Resultado</Text>
+            <Text>Bitola (110V): {res.b110} mm² — recomenda: {res.recom110} mm²</Text>
+            <Text>Bitola (220V): {res.b220} mm² — recomenda: {res.recom220} mm²</Text>
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+// Estilos do aplicativo
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF8F0',
   },
-  stepContainer: {
-    gap: 8,
+  content: {
+    padding: 18,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#4A148C', // Cor ajustada para título
+  },
+  input: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  button: {
+    backgroundColor: '#B45309',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  card: {
+    marginTop: 16,
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 10,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontWeight: '700',
+    marginBottom: 8,
+    color: '#4A148C', // Ajustado para visibilidade
   },
 });
+
+export default App;
