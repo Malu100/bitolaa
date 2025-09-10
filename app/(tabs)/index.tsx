@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-// Padrão de bitolas de fio
 const standard = [0.5, 0.75, 1, 1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70];
 
-// Componente principal do app
 const App = () => {
   const [corrente, setCorrente] = useState<string>('');
   const [distancia, setDistancia] = useState<string>('');
@@ -15,28 +13,23 @@ const App = () => {
     recom220: number;
   } | null>(null);
 
-  // Função para arredondar para a próxima bitola disponível
   const roundUpStandard = (value: number): number => {
     const found = standard.find(s => s >= value);
     return found || standard[standard.length - 1];
   };
 
-  // Função para calcular a bitola com base na corrente e distância
   const calcular = () => {
     const I = parseFloat(corrente.replace(',', '.')) || 0;
     const d = parseFloat(distancia.replace(',', '.')) || 0;
     
-    // Validar se os valores são válidos
     if (I <= 0 || d <= 0) {
       Alert.alert('Erro', 'Informe corrente e distância válidas');
       return;
     }
 
-    // Calcular as bitolas para 110V e 220V
     const b110 = (2 * I * d) / 294.64;
     const b220 = (2 * I * d) / 510.4;
 
-    // Atualizar o estado com os resultados calculados
     setRes({
       b110: Math.round(b110 * 100) / 100,
       b220: Math.round(b220 * 100) / 100,
@@ -50,7 +43,7 @@ const App = () => {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>Calculadora de Bitola</Text>
 
-        {/* Campos de entrada para corrente e distância */}
+        {}
         <TextInput
           style={styles.input}
           placeholder="Corrente (A)"
@@ -66,12 +59,12 @@ const App = () => {
           keyboardType="numeric"
         />
 
-        {/* Botão para disparar o cálculo */}
+        {}
         <TouchableOpacity style={styles.button} onPress={calcular}>
           <Text style={styles.buttonText}>Calcular</Text>
         </TouchableOpacity>
 
-        {/* Exibir resultados se disponíveis */}
+        {}
         {res && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Resultado</Text>
@@ -84,7 +77,6 @@ const App = () => {
   );
 };
 
-// Estilos do aplicativo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -97,7 +89,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 12,
-    color: '#4A148C', // Cor ajustada para título
+    color: '#4A148C',
   },
   input: {
     backgroundColor: '#fff',
@@ -127,7 +119,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontWeight: '700',
     marginBottom: 8,
-    color: '#4A148C', // Ajustado para visibilidade
+    color: '#4A148C',
   },
 });
 
